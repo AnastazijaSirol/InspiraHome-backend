@@ -3,22 +3,31 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const sequelize = require('./config/database');
+const User = require('./models/user');
+const History = require('./models/history');  
 
 const app = express();
 const PORT = 3000;
-
-const sequelize = require('./config/database');
-const User = require('./models/user');
 
 sequelize.sync().then(() => {
   console.log('Database & tables created!');
 });
 
-
 app.use(cors());
 app.use(bodyParser.json());
 
-let users = []; 
+function verifyToken(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(403).send({ auth: false, message: 'No token provided.' });
+
+  jwt.verify(token, 'secret', (err, decoded) => {
+    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+
+    req.userId = decoded.id;
+    next();
+  });
+}
 
 app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body;
@@ -60,6 +69,22 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.post('/api/history', verifyToken, async (req, res) => {
+  const { style, room, color } = req.body;
+
+  try {
+    await History.create({
+      style,
+      room,
+      color,
+      userId: req.userId,  
+    });
+
+    res.status(201).send('History record saved.');
+  } catch (error) {
+    res.status(500).send('Error saving history.');
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
