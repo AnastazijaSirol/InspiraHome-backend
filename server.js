@@ -5,10 +5,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sequelize = require('./config/database');
 const User = require('./models/user');
-const History = require('./models/history');  
+const History = require('./models/history');
+const axios = require('axios');
 
 const app = express();
 const PORT = 3000;
+const HF_API_TOKEN = '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';
 
 sequelize.sync().then(() => {
   console.log('Database & tables created!');
@@ -23,7 +25,6 @@ function verifyToken(req, res, next) {
 
   jwt.verify(token, 'secret', (err, decoded) => {
     if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
-
     req.userId = decoded.id;
     next();
   });
@@ -83,6 +84,35 @@ app.post('/api/history', verifyToken, async (req, res) => {
     res.status(201).send('History record saved.');
   } catch (error) {
     res.status(500).send('Error saving history.');
+  }
+});
+
+app.post('/api/images', async (req, res) => {
+  const { style, room, color } = req.body;
+  const prompt = `Generate an image of a ${room} in ${style} style with predominant ${color} color tones.`;
+
+  try {
+    const response = await axios.post(
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
+      { inputs: prompt },
+      {
+        headers: {
+          Authorization: `Bearer ${HF_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      const imageBytes = response.data;
+      res.set('Content-Type', 'image/png');
+      res.send(imageBytes);
+    } else {
+      res.status(response.status).send(`Failed to generate image: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error fetching images from Hugging Face:', error);
+    res.status(500).send('Failed to generate images.');
   }
 });
 
