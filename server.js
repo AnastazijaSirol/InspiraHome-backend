@@ -126,7 +126,7 @@ app.post('/api/images', verifyToken, async (req, res) => {
       const filePath = path.join(IMAGE_DIR, filename);
       fs.writeFileSync(filePath, Buffer.from(response.data));
       const imageUrl = `http://localhost:${PORT}/images/${filename}`;
-      res.json({ image: imageUrl });
+      res.json({ image: imageUrl, prompt });
     } else {
       console.error('Error from Hugging Face API:', response.status, response.data);
       return res.status(500).json({ error: 'Failed to generate image: Error from API.' });
