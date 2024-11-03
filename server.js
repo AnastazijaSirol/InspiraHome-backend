@@ -140,6 +140,23 @@ app.post('/api/images', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/profile', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId, {
+      attributes: ['username', 'email']
+    });
+
+    if (!user) {
+      return res.status(404).send('User not found.');
+    }
+
+    res.status(200).json({ username: user.username, email: user.email });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).send('Error fetching user profile.');
+  }
+});
+
 app.use('/images', express.static(IMAGE_DIR));
 
 app.listen(PORT, () => {
