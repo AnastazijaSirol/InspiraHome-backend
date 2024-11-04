@@ -143,17 +143,41 @@ app.post('/api/images', verifyToken, async (req, res) => {
 app.get('/api/profile', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.userId, {
-      attributes: ['username', 'email']
+      attributes: ['username', 'email', 'isDesigner']
     });
 
     if (!user) {
       return res.status(404).send('User not found.');
     }
-
-    res.status(200).json({ username: user.username, email: user.email });
+    res.status(200).json({ 
+      username: user.username, 
+      email: user.email, 
+      isDesigner: user.isDesigner 
+    });
   } catch (error) {
     console.error('Error fetching user profile:', error);
     res.status(500).send('Error fetching user profile.');
+  }
+});
+
+app.put('/api/profile/designer', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId);
+    
+    if (!user) {
+      return res.status(404).send('User not found.');
+    }
+
+    if (user.isDesigner) {
+      return res.status(403).send('Cannot change designer status once set.');
+    }
+
+    user.isDesigner = true;
+    await user.save();
+    res.status(200).send('User is now a designer.');
+  } catch (error) {
+    console.error('Error updating designer status:', error);
+    res.status(500).send('Error updating designer status.');
   }
 });
 
