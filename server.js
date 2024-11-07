@@ -233,6 +233,21 @@ app.delete('/api/likes/:id', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/history', verifyToken, async (req, res) => {
+  try {
+    const history = await History.findAll({
+      where: { userId: req.userId },
+      attributes: ['style', 'room', 'color', 'dateTime'],
+      order: [['dateTime', 'DESC']], 
+    });
+    
+    res.status(200).json(history);
+  } catch (error) {
+    console.error('Error fetching search history:', error);
+    res.status(500).send('Error fetching search history.');
+  }
+});
+
 app.use('/images', express.static(IMAGE_DIR));
 
 app.listen(PORT, () => {
