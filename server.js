@@ -9,6 +9,7 @@ const History = require('./models/history');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const Like = require('./models/like');
 
 const app = express();
 const PORT = 3000;
@@ -178,6 +179,57 @@ app.put('/api/profile/designer', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error updating designer status:', error);
     res.status(500).send('Error updating designer status.');
+  }
+});
+
+app.post('/api/likes', verifyToken, async (req, res) => {
+  const { imageUrl } = req.body;
+
+  console.log('Received like request:', req.body); 
+
+  const userId = req.userId;
+
+  try {
+    const like = await Like.create({
+      userId: userId,
+      imageUrl: imageUrl,
+    });
+    res.status(201).json({ success: true, like });
+  } catch (error) {
+    console.error('Error saving like:', error);
+    res.status(500).json({ success: false, error: 'Failed to save like.' });
+  }
+});
+
+app.get('/api/likes', verifyToken, async (req, res) => {
+  try {
+    const likes = await Like.findAll({
+      where: { userId: req.userId },
+      attributes: ['id', 'imageUrl', 'likedAt'],
+    });
+    
+    res.status(200).json(likes);
+  } catch (error) {
+    console.error('Error fetching liked images:', error);
+    res.status(500).send('Failed to fetch liked images.');
+  }
+});
+
+app.delete('/api/likes/:id', verifyToken, async (req, res) => {
+  const likeId = req.params.id;
+
+  try {
+    const like = await Like.findOne({ where: { id: likeId, userId: req.userId } });
+    
+    if (!like) {
+      return res.status(404).json({ error: 'Like not found.' });
+    }
+
+    await like.destroy();
+    res.status(200).json({ success: true, message: 'Like removed successfully.' });
+  } catch (error) {
+    console.error('Error removing like:', error);
+    res.status(500).json({ success: false, error: 'Failed to remove like.' });
   }
 });
 
