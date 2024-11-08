@@ -10,6 +10,8 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const Like = require('./models/like');
+const Group = require('./models/group');
+const Message = require('./models/message');
 
 const app = express();
 const PORT = 3000;
@@ -247,6 +249,83 @@ app.get('/api/history', verifyToken, async (req, res) => {
     res.status(500).send('Error fetching search history.');
   }
 });
+
+app.delete('/api/history/:dateTime', verifyToken, async (req, res) => {
+  const { dateTime } = req.params;
+  try {
+    const result = await History.destroy({
+      where: {
+        userId: req.userId,
+        dateTime: dateTime,
+      },
+    });
+    if (result) {
+      res.status(200).send('History entry deleted successfully.');
+    } else {
+      res.status(404).send('History entry not found.');
+    }
+  } catch (error) {
+    console.error('Error deleting history entry:', error);
+    res.status(500).send('Error deleting history entry.');
+  }
+});
+
+app.post('/api/groups', verifyToken, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const group = await Group.create({ name, userId: req.userId });
+    res.status(201).json(group);
+  } catch (error) {
+    console.error('Error creating group:', error);
+    res.status(500).send('Error creating group.');
+  }
+});
+
+app.get('/api/groups', verifyToken, async (req, res) => {
+  try {
+    const groups = await Group.findAll();
+    res.status(200).json(groups);
+  } catch (error) {
+    console.error('Error fetching groups:', error);
+    res.status(500).send('Error fetching groups.');
+  }
+});
+
+app.post('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
+  const { text } = req.body;
+  const { groupId } = req.params;
+
+  try {
+    const message = await Message.create({
+      text,
+      userId: req.userId,
+      groupId,
+    });
+    res.status(201).json(message);
+  } catch (error) {
+    console.error('Error adding message:', error);
+    res.status(500).send('Error adding message.');
+  }
+});
+
+app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const messages = await Message.findAll({
+      where: { groupId },
+      include: [{ model: User, attributes: ['username'] }],
+      order: [['createdAt', 'ASC']],
+      raw: true
+    });
+    console.log('Messages fetched:', messages); 
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).send('Error fetching messages.');
+  }
+});
+
 
 app.use('/images', express.static(IMAGE_DIR));
 
