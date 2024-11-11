@@ -163,6 +163,27 @@ app.get('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
+app.put('/api/profile', verifyToken, async (req, res) => {
+  const { username } = req.body;
+
+  try {
+    const user = await User.findByPk(req.userId);
+
+    if (!user) {
+      return res.status(404).send('User not found.');
+    }
+
+    user.username = username;  
+    await user.save();  
+
+    res.status(200).send('Username updated successfully.');
+  } catch (error) {
+    console.error('Error updating username:', error);
+    res.status(500).send('Failed to update username.');
+  }
+});
+
+
 app.put('/api/profile/designer', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.userId);
