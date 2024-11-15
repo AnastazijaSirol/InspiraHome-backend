@@ -7,13 +7,11 @@ const sequelize = require('./config/database');
 const User = require('./models/user');
 const History = require('./models/history');
 const axios = require('axios');
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const Like = require('./models/like');
 const Group = require('./models/group');
 const Message = require('./models/message');
-const Added = require('./models/added');
 
 const app = express();
 const PORT = 3000;
@@ -46,20 +44,6 @@ function verifyToken(req, res, next) {
   });
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './uploads'; 
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir); 
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage: storage });
 
 app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body;
@@ -363,25 +347,6 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   }
 });
 
-app.post('/api/upload-image', verifyToken, upload.single('image'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded.' });
-  }
-
-  const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`; 
-
-  try {
-    const newImage = await Added.create({
-      userId: req.userId, 
-      url: imageUrl, 
-    });
-
-    res.status(201).json({ url: imageUrl, message: 'Image uploaded and saved successfully.' });
-  } catch (error) {
-    console.error('Error saving image URL:', error);
-    res.status(500).json({ message: 'Failed to save image.' });
-  }
-});
 
 app.use('/images', express.static(IMAGE_DIR));
 
