@@ -12,6 +12,7 @@ const path = require('path');
 const Like = require('./models/like');
 const Group = require('./models/group');
 const Message = require('./models/message');
+const Added = require('./models/added');
 
 const app = express();
 const PORT = 3000;
@@ -344,6 +345,42 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching messages:', error);
     res.status(500).send('Error fetching messages.');
+  }
+});
+
+app.post('/api/upload', verifyToken, async (req, res) => {
+  try {
+
+    console.log('Received body:', req.body);
+
+    if (!req.body.file || !req.body.filename) {
+      return res.status(400).json({ error: 'No file data or filename provided.' });
+    }
+
+    const { file, filename } = req.body;
+
+    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
+    const fileExtension = path.extname(filename).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      return res.status(400).json({ error: 'Invalid file type.' });
+    }
+
+    const uniqueFilename = `upload_${Date.now()}${fileExtension}`;
+    const filePath = path.join(IMAGE_DIR, uniqueFilename);
+
+    const fileBuffer = Buffer.from(file, 'base64');
+    fs.writeFileSync(filePath, fileBuffer);
+
+    const imageUrl = `http://localhost:${PORT}/images/${uniqueFilename}`;
+    const added = await Added.create({
+      url: imageUrl,
+      userId: req.userId,
+    });
+
+    res.status(201).json({ success: true, imageUrl, added });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ error: 'Failed to upload file.' });
   }
 });
 
