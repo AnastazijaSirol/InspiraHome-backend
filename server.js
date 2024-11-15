@@ -384,6 +384,22 @@ app.post('/api/upload', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/uploaded-images', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId; 
+
+    const images = await Added.findAll({
+      where: { userId },
+      attributes: ['id', 'url', 'createdAt'], 
+      order: [['createdAt', 'DESC']], 
+    });
+
+    res.status(200).json(images);
+  } catch (error) {
+    console.error('Error fetching user images:', error);
+    res.status(500).json({ error: 'Failed to fetch user images.' });
+  }
+});
 
 app.use('/images', express.static(IMAGE_DIR));
 
