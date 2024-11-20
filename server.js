@@ -401,6 +401,19 @@ app.get('/api/uploaded-images', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/designers', verifyToken, async (req, res) => {
+  try {
+    const designers = await User.findAll({
+      where: { isDesigner: true },
+      attributes: ['username'] 
+    });
+    res.status(200).json(designers);
+  } catch (error) {
+    console.error('Error fetching designers:', error);
+    res.status(500).send('Error fetching designers.');
+  }
+});
+
 app.use('/images', express.static(IMAGE_DIR));
 
 app.listen(PORT, () => {
