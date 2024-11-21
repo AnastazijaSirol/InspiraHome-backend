@@ -405,12 +405,31 @@ app.get('/api/designers', verifyToken, async (req, res) => {
   try {
     const designers = await User.findAll({
       where: { isDesigner: true },
-      attributes: ['username'] 
+      attributes: ['id', 'username'] 
     });
     res.status(200).json(designers);
   } catch (error) {
     console.error('Error fetching designers:', error);
     res.status(500).send('Error fetching designers.');
+  }
+});
+
+app.get('/api/images/:designerId', verifyToken, async (req, res) => {
+  const designerId = parseInt(req.params.designerId, 10);
+
+  if (!designerId || isNaN(designerId)) {
+    return res.status(400).json({ error: "Invalid designer ID." });
+  }
+
+  try {
+    const images = await Added.findAll({
+      where: { userId: designerId },
+      attributes: ['id', 'url', 'createdAt'],
+    });
+    res.status(200).json(images);
+  } catch (error) {
+    console.error("Error fetching designer images:", error);
+    res.status(500).json({ error: "Failed to fetch designer images." });
   }
 });
 
