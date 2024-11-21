@@ -13,6 +13,7 @@ const Like = require('./models/like');
 const Group = require('./models/group');
 const Message = require('./models/message');
 const Added = require('./models/added');
+const Style = require('./models/style');
 
 const app = express();
 const PORT = 3000;
@@ -405,7 +406,7 @@ app.get('/api/designers', verifyToken, async (req, res) => {
   try {
     const designers = await User.findAll({
       where: { isDesigner: true },
-      attributes: ['id', 'username'] 
+      attributes: ['id', 'username', 'email'] 
     });
     res.status(200).json(designers);
   } catch (error) {
@@ -430,6 +431,33 @@ app.get('/api/images/:designerId', verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error fetching designer images:", error);
     res.status(500).json({ error: "Failed to fetch designer images." });
+  }
+});
+
+app.post('/api/save-quiz-result', verifyToken, async (req, res) => {
+  const { style } = req.body;
+
+  try {
+    await Style.create({
+      userId: req.userId,
+      style
+    });
+    res.status(201).send("Quiz result saved successfully.");
+  } catch (error) {
+    console.error("Error saving quiz result:", error);
+    res.status(500).send("Failed to save quiz result.");
+  }
+});
+
+app.get('/api/get-quiz-result', verifyToken, async (req, res) => {
+  try {
+    const results = await Style.findAll({
+      where: { userId: req.userId }
+    });
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching quiz results:", error);
+    res.status(500).send("Failed to fetch quiz results.");
   }
 });
 
