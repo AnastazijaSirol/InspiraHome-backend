@@ -35,7 +35,6 @@ function verifyToken(req, res, next) {
   const token = req.headers['authorization'];
   console.log('Token received:', token); 
   if (!token) return res.status(403).send({ auth: false, message: 'No token provided.' });
-
   jwt.verify(token.split(' ')[1], 'secret', (err, decoded) => { 
     if (err) {
       console.error('Token verification failed:', err);
@@ -46,10 +45,8 @@ function verifyToken(req, res, next) {
   });
 };
 
-
 app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body;
-
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -66,7 +63,6 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).send('User not found.');
@@ -84,7 +80,6 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/history', verifyToken, async (req, res) => {
   const { style, room, color } = req.body;
-
   try {
     await History.create({
       style,
@@ -113,7 +108,6 @@ app.post('/api/images', verifyToken, async (req, res) => {
 
     const prompt = `Generate a realistic image of a ${latestHistory.room} in ${latestHistory.style} style with predominant ${latestHistory.color} color tones.`;
     console.log('Prompt being sent to API:', prompt);
-
     const response = await axios.post(
       'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
       { inputs: prompt },
@@ -136,6 +130,7 @@ app.post('/api/images', verifyToken, async (req, res) => {
       console.error('Error from Hugging Face API:', response.status, response.data);
       return res.status(500).json({ error: 'Failed to generate image: Error from API.' });
     }
+
   } catch (error) {
     console.error('Error fetching image from Hugging Face:', error.message);
     if (error.response) {
@@ -154,11 +149,13 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     if (!user) {
       return res.status(404).send('User not found.');
     }
+
     res.status(200).json({ 
       username: user.username, 
       email: user.email, 
       isDesigner: user.isDesigner 
     });
+
   } catch (error) {
     console.error('Error fetching user profile:', error);
     res.status(500).send('Error fetching user profile.');
@@ -167,7 +164,6 @@ app.get('/api/profile', verifyToken, async (req, res) => {
 
 app.put('/api/profile', verifyToken, async (req, res) => {
   const { username } = req.body;
-
   try {
     const user = await User.findByPk(req.userId);
 
@@ -177,8 +173,8 @@ app.put('/api/profile', verifyToken, async (req, res) => {
 
     user.username = username;  
     await user.save();  
-
     res.status(200).send('Username updated successfully.');
+
   } catch (error) {
     console.error('Error updating username:', error);
     res.status(500).send('Failed to update username.');
@@ -189,7 +185,7 @@ app.put('/api/profile', verifyToken, async (req, res) => {
 app.put('/api/profile/designer', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.userId);
-    
+
     if (!user) {
       return res.status(404).send('User not found.');
     }
@@ -201,6 +197,7 @@ app.put('/api/profile/designer', verifyToken, async (req, res) => {
     user.isDesigner = true;
     await user.save();
     res.status(200).send('User is now a designer.');
+
   } catch (error) {
     console.error('Error updating designer status:', error);
     res.status(500).send('Error updating designer status.');
@@ -209,17 +206,15 @@ app.put('/api/profile/designer', verifyToken, async (req, res) => {
 
 app.post('/api/likes', verifyToken, async (req, res) => {
   const { imageUrl } = req.body;
-
   console.log('Received like request:', req.body); 
-
   const userId = req.userId;
-
   try {
     const like = await Like.create({
       userId: userId,
       imageUrl: imageUrl,
     });
     res.status(201).json({ success: true, like });
+
   } catch (error) {
     console.error('Error saving like:', error);
     res.status(500).json({ success: false, error: 'Failed to save like.' });
@@ -232,8 +227,8 @@ app.get('/api/likes', verifyToken, async (req, res) => {
       where: { userId: req.userId },
       attributes: ['id', 'imageUrl', 'likedAt'],
     });
-    
     res.status(200).json(likes);
+
   } catch (error) {
     console.error('Error fetching liked images:', error);
     res.status(500).send('Failed to fetch liked images.');
@@ -242,7 +237,6 @@ app.get('/api/likes', verifyToken, async (req, res) => {
 
 app.delete('/api/likes/:id', verifyToken, async (req, res) => {
   const likeId = req.params.id;
-
   try {
     const like = await Like.findOne({ where: { id: likeId, userId: req.userId } });
     
@@ -252,6 +246,7 @@ app.delete('/api/likes/:id', verifyToken, async (req, res) => {
 
     await like.destroy();
     res.status(200).json({ success: true, message: 'Like removed successfully.' });
+
   } catch (error) {
     console.error('Error removing like:', error);
     res.status(500).json({ success: false, error: 'Failed to remove like.' });
@@ -265,8 +260,8 @@ app.get('/api/history', verifyToken, async (req, res) => {
       attributes: ['style', 'room', 'color', 'dateTime'],
       order: [['dateTime', 'DESC']], 
     });
-    
     res.status(200).json(history);
+
   } catch (error) {
     console.error('Error fetching search history:', error);
     res.status(500).send('Error fetching search history.');
@@ -317,7 +312,6 @@ app.get('/api/groups', verifyToken, async (req, res) => {
 app.post('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   const { text } = req.body;
   const { groupId } = req.params;
-
   try {
     const message = await Message.create({
       text,
@@ -333,7 +327,6 @@ app.post('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
 
 app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   const { groupId } = req.params;
-
   try {
     const messages = await Message.findAll({
       where: { groupId },
@@ -351,7 +344,6 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
 
 app.post('/api/upload', verifyToken, async (req, res) => {
   try {
-
     console.log('Received body:', req.body);
 
     if (!req.body.file || !req.body.filename) {
@@ -359,19 +351,17 @@ app.post('/api/upload', verifyToken, async (req, res) => {
     }
 
     const { file, filename } = req.body;
-
     const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
     const fileExtension = path.extname(filename).toLowerCase();
+
     if (!allowedExtensions.includes(fileExtension)) {
       return res.status(400).json({ error: 'Invalid file type.' });
     }
 
     const uniqueFilename = `upload_${Date.now()}${fileExtension}`;
     const filePath = path.join(IMAGE_DIR, uniqueFilename);
-
     const fileBuffer = Buffer.from(file, 'base64');
     fs.writeFileSync(filePath, fileBuffer);
-
     const imageUrl = `http://localhost:${PORT}/images/${uniqueFilename}`;
     const added = await Added.create({
       url: imageUrl,
@@ -388,7 +378,6 @@ app.post('/api/upload', verifyToken, async (req, res) => {
 app.get('/api/uploaded-images', verifyToken, async (req, res) => {
   try {
     const userId = req.userId; 
-
     const images = await Added.findAll({
       where: { userId },
       attributes: ['id', 'url', 'createdAt'], 
@@ -436,7 +425,6 @@ app.get('/api/images/:designerId', verifyToken, async (req, res) => {
 
 app.post('/api/save-quiz-result', verifyToken, async (req, res) => {
   const { style } = req.body;
-
   try {
     await Style.create({
       userId: req.userId,
