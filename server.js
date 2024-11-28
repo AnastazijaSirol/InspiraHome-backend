@@ -473,6 +473,17 @@ app.post("/api/competitions", async (req, res) => {
   }
 });
 
+app.get("/api/competitions", async (req, res) => {
+  try {
+    const competitions = await Competition.findAll();
+    res.status(200).json(competitions);
+  } catch (error) {
+    console.error("Error fetching competitions:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
