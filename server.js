@@ -15,6 +15,7 @@ const Message = require('./models/message');
 const Added = require('./models/added');
 const Style = require('./models/style');
 const Competition = require("./models/competition");
+const Competitor = require("./models/competitor");
 
 const app = express();
 const PORT = 3000;
@@ -480,6 +481,36 @@ app.get("/api/competitions", async (req, res) => {
   } catch (error) {
     console.error("Error fetching competitions:", error);
     res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.userId;
+
+  try {
+    const competition = await Competition.findByPk(id);
+    if (!competition) {
+      return res.status(404).json({ message: "Competition not found" });
+    }
+
+    const existingCompetitor = await Competitor.findOne({
+      where: { userId, competitionId: id }
+    });
+    if (existingCompetitor) {
+      return res.status(400).json({ message: "User already joined the competition" });
+    }
+
+    const newCompetitor = await Competitor.create({
+      userId,
+      competitionId: id,
+      description: 'User description for competition', 
+    });
+
+    res.status(201).json(newCompetitor);
+  } catch (error) {
+    console.error("Error joining competition:", error);
+    res.status(500).json({ message: "Error joining competition" });
   }
 });
 
