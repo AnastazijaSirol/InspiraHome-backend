@@ -14,6 +14,7 @@ const Group = require('./models/group');
 const Message = require('./models/message');
 const Added = require('./models/added');
 const Style = require('./models/style');
+const Competition = require("./models/competition");
 
 const app = express();
 const PORT = 3000;
@@ -29,7 +30,9 @@ sequelize.sync().then(() => {
 });
 
 app.use(cors());
+app.use(express.json());
 app.use(bodyParser.json());
+app.use('/images', express.static(IMAGE_DIR));
 
 function verifyToken(req, res, next) {
   const token = req.headers['authorization'];
@@ -449,7 +452,26 @@ app.get('/api/get-quiz-result', verifyToken, async (req, res) => {
   }
 });
 
-app.use('/images', express.static(IMAGE_DIR));
+app.post("/api/competitions", async (req, res) => {
+  const { name, date, image } = req.body;
+
+  if (!name || !date || !image) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  try {
+    const newCompetition = await Competition.create({
+      name,
+      date,
+      image, 
+    });
+
+    res.status(201).json(newCompetition);
+  } catch (error) {
+    console.error("Error creating competition:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
