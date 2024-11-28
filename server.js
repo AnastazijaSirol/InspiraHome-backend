@@ -487,6 +487,7 @@ app.get("/api/competitions", async (req, res) => {
 app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
   const { id } = req.params;
   const userId = req.userId;
+  const { description } = req.body;  
 
   try {
     const competition = await Competition.findByPk(id);
@@ -504,7 +505,7 @@ app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
     const newCompetitor = await Competitor.create({
       userId,
       competitionId: id,
-      description: 'User description for competition', 
+      description: description, 
     });
 
     res.status(201).json(newCompetitor);
@@ -513,7 +514,6 @@ app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Error joining competition" });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
