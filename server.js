@@ -515,6 +515,25 @@ app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/competitions/:competitionId/descriptions', async (req, res) => {
+  const { competitionId } = req.params;
+
+  try {
+      const descriptions = await Competitor.findAll({
+          where: { competitionId },
+          include: {
+              model: User,
+              attributes: ['username'], 
+          },
+      });
+
+      res.status(200).json(descriptions);
+  } catch (error) {
+      console.error('Error fetching competition descriptions:', error);
+      res.status(500).json({ message: 'Failed to fetch descriptions.' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
