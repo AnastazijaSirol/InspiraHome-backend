@@ -461,10 +461,11 @@ app.post("/api/competitions", async (req, res) => {
   }
 
   try {
-    const newCompetition = await Competition.create({
+    let newCompetition = await Competition.create({
+      userId: req.userId,
       name,
       date,
-      image, 
+      image
     });
 
     res.status(201).json(newCompetition);
