@@ -453,7 +453,7 @@ app.get('/api/get-quiz-result', verifyToken, async (req, res) => {
   }
 });
 
-app.post("/api/competitions", async (req, res) => {
+app.post("/api/competitions", verifyToken, async (req, res) => {
   const { name, date, image } = req.body;
 
   if (!name || !date || !image) {
@@ -461,14 +461,14 @@ app.post("/api/competitions", async (req, res) => {
   }
 
   try {
-    let newCompetition = await Competition.create({
-      userId: req.userId,
+    await Competition.create({
       name,
       date,
-      image
+      image,
+      userId: req.userId,
     });
 
-    res.status(201).json(newCompetition);
+    res.status(201).json("Competition saved successfully!");
   } catch (error) {
     console.error("Error creating competition:", error);
     res.status(500).json({ message: "Internal server error." });
