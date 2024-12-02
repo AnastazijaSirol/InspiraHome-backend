@@ -7,6 +7,10 @@ const Competitor = sequelize.define("Competitor", {
     description: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    winner: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })
 
