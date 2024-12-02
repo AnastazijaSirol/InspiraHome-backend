@@ -8,7 +8,7 @@ const Competition = sequelize.define("Competition", {
     allowNull: false,
   },
   image: {
-    type: DataTypes.STRING(1000000),
+    type: DataTypes.STRING(100000),
     allowNull: false,
   },
   date: {
