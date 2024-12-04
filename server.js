@@ -535,6 +535,23 @@ app.get('/api/competitions/:competitionId/descriptions', async (req, res) => {
   }
 });
 
+app.post("/api/competitions/:id/pick-winner", async (req, res) => {
+  const { id } = req.params;
+  const { winner } = req.body;
+  try {
+    const competition = await Competition.findByPk(id);
+    if (!competition) {
+      return res.status(404).json({ message: "Competition not found" });
+    }
+    competition.winner = winner;
+    await competition.save();
+    res.status(200).json({ message: "Winner selected successfully" });
+  } catch (error) {
+    console.error("Error picking winner:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
