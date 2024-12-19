@@ -19,7 +19,7 @@ const Competitor = require("./models/competitor");
 
 const app = express();
 const PORT = 3000;
-const HF_API_TOKEN = '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';
+const HF_API_TOKEN = process.env.HF_API_TOKEN;
 const IMAGE_DIR = path.join(__dirname, 'images');
 if (!fs.existsSync(IMAGE_DIR)) {
   fs.mkdirSync(IMAGE_DIR);
