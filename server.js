@@ -20,7 +20,6 @@ const Competitor = require("./models/competitor");
 const app = express();
 const PORT = 3000;
 const HF_API_TOKEN = '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';
-
 const IMAGE_DIR = path.join(__dirname, 'images');
 if (!fs.existsSync(IMAGE_DIR)) {
   fs.mkdirSync(IMAGE_DIR);
@@ -111,6 +110,7 @@ app.post('/api/images', verifyToken, async (req, res) => {
     }
 
     const prompt = `Generate a realistic image of a ${latestHistory.room} in ${latestHistory.style} style with predominant ${latestHistory.color} color tones.`;
+    console.log('Your token:', HF_API_TOKEN);
     console.log('Prompt being sent to API:', prompt);
     const response = await axios.post(
       'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
