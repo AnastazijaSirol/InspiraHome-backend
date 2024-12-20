@@ -349,10 +349,15 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   }
 });
 
+const fs = require('fs');
+const path = require('path');
+const IMAGE_DIR = 'path_to_your_image_directory'; // Postavi ispravan direktorij za slike
+
 app.post('/api/upload', verifyToken, async (req, res) => {
   const protocol = req.protocol; 
   const host = req.get('host');  
   const BASE_URL = `${protocol}://${host}`;
+
   try {
     console.log('Received body:', req.body);
 
@@ -369,10 +374,15 @@ app.post('/api/upload', verifyToken, async (req, res) => {
     }
 
     const uniqueFilename = `upload_${Date.now()}${fileExtension}`;
+
     const filePath = path.join(IMAGE_DIR, uniqueFilename);
+    
     const fileBuffer = Buffer.from(file, 'base64');
+    
     fs.writeFileSync(filePath, fileBuffer);
-    const imageUrl = `${BASE_URL}/images/${filename}`;
+
+    const imageUrl = `${BASE_URL}/images/${uniqueFilename}`;
+    
     const added = await Added.create({
       url: imageUrl,
       userId: req.userId,
