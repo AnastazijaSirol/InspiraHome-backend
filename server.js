@@ -98,6 +98,9 @@ app.post('/api/history', verifyToken, async (req, res) => {
 });
 
 app.post('/api/images', verifyToken, async (req, res) => {
+  const protocol = req.protocol; 
+  const host = req.get('host');  
+  const BASE_URL = `${protocol}://${host}`;
   try {
     const latestHistory = await History.findOne({
       where: { userId: req.userId },
@@ -128,7 +131,7 @@ app.post('/api/images', verifyToken, async (req, res) => {
       const filename = `image_${Date.now()}.png`;
       const filePath = path.join(IMAGE_DIR, filename);
       fs.writeFileSync(filePath, Buffer.from(response.data));
-      const imageUrl = `/images/${filename}`;
+      const imageUrl = `${BASE_URL}/images/${filename}`;
       res.json({ image: imageUrl, prompt });
     } else {
       console.error('Error from Hugging Face API:', response.status, response.data);
