@@ -349,10 +349,6 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
   }
 });
 
-const fs = require('fs');
-const path = require('path');
-const IMAGE_DIR = 'path_to_your_image_directory'; // Postavi ispravan direktorij za slike
-
 app.post('/api/upload', verifyToken, async (req, res) => {
   const protocol = req.protocol; 
   const host = req.get('host');  
