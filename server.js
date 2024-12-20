@@ -350,6 +350,9 @@ app.get('/api/groups/:groupId/messages', verifyToken, async (req, res) => {
 });
 
 app.post('/api/upload', verifyToken, async (req, res) => {
+  const protocol = req.protocol; 
+  const host = req.get('host');  
+  const BASE_URL = `${protocol}://${host}`;
   try {
     console.log('Received body:', req.body);
 
@@ -369,7 +372,7 @@ app.post('/api/upload', verifyToken, async (req, res) => {
     const filePath = path.join(IMAGE_DIR, uniqueFilename);
     const fileBuffer = Buffer.from(file, 'base64');
     fs.writeFileSync(filePath, fileBuffer);
-    const imageUrl = `http://localhost:${PORT}/images/${uniqueFilename}`;
+    const imageUrl = `${BASE_URL}/images/${filename}`;
     const added = await Added.create({
       url: imageUrl,
       userId: req.userId,
