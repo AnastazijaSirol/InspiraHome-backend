@@ -14,7 +14,7 @@ const Competitor = sequelize.define("Competitor", {
     }
 })
 
-Competitor.belongsTo(User, { foreignKey: 'userId' });
-Competitor.belongsTo(Competition, { foreignKey: 'competitionId' });
+Competitor.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Competitor.belongsTo(Competition, { foreignKey: 'competitionId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
 module.exports = Competitor;
