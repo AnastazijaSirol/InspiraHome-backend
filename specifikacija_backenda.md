@@ -50,7 +50,7 @@ Dohvaćanje korisničkog računa
 `email: user.email,`
 `isDesigner: user.isDesigner`
 `});`
-- Neuspješno: `return res.status(500).json({ error: 'Failed to generate image.' });`
+- Neuspješno: `res.status(500).send('Error fetching user profile.');`
 
 ## 6. PUT /api/profile
 Ažuriranje usename-a
