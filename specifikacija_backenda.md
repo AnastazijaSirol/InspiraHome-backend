@@ -3,7 +3,7 @@
 ## 1. POST /api/signup
 Registracija novog korisnika
 ### Ulazni podaci:
-- usename
+- username
 - email
 - password
 
@@ -39,7 +39,7 @@ Generiranje slike na temelju prompta korisnika
 
 ### Izlaz:
 - Uspješno: `res.json({ image: imageUrl, prompt });`
-- Neuspješno: `return res.status(500).json({ error: 'Failed to generate image.' });`
+- Neuspješno: `res.status(500).json({ error: 'Failed to generate image.' });`
 
 ## 5. GET /api/profile
 Dohvaćanje korisničkog računa
