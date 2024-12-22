@@ -53,7 +53,7 @@ Dohvaćanje korisničkog računa
 - Neuspješno: `res.status(500).send('Error fetching user profile.');`
 
 ## 6. PUT /api/profile
-Ažuriranje usename-a
+Ažuriranje username-a
 ### Ulazni podaci:
 - username
 
