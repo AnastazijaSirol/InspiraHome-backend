@@ -533,11 +533,17 @@ app.get('/api/competitions/:competitionId/descriptions', async (req, res) => {
 
   try {
       const descriptions = await Competitor.findAll({
-          where: { competitionId },
-          include: {
-              model: User,
-              attributes: ['username'], 
+        where: { competitionId },
+        include: [
+          {
+            model: User,
+            attributes: ['username'],
           },
+          {
+            model: Competition,
+            attributes: ['name', 'date'],
+          },
+        ],
       });
 
       res.status(200).json(descriptions);
