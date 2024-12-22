@@ -14,8 +14,6 @@ const Group = require('./models/group');
 const Message = require('./models/message');
 const Added = require('./models/added');
 const Style = require('./models/style');
-const Competition = require("./models/competition");
-const Competitor = require("./models/competitor");
 
 const app = express();
 const PORT = 3000;
@@ -464,113 +462,6 @@ app.get('/api/get-quiz-result', verifyToken, async (req, res) => {
     res.status(500).send("Failed to fetch quiz results.");
   }
 });
-
-app.post("/api/competitions", verifyToken, async (req, res) => {
-  const { name, date, image } = req.body;
-
-  if (!name || !date || !image) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-
-  try {
-    await Competition.create({
-      name,
-      date,
-      image,
-      userId: req.userId,
-    });
-
-    res.status(201).json("Competition saved successfully!");
-  } catch (error) {
-    console.error("Error creating competition:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
-
-app.get("/api/competitions", async (req, res) => {
-  try {
-    const competitions = await Competition.findAll();
-    res.status(200).json(competitions);
-  } catch (error) {
-    console.error("Error fetching competitions:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
-
-app.post('/api/competitions/:id/join', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const userId = req.userId;
-  const { description } = req.body;  
-
-  try {
-    const competition = await Competition.findByPk(id);
-    if (!competition) {
-      return res.status(404).json({ message: "Competition not found" });
-    }
-
-    const existingCompetitor = await Competitor.findOne({
-      where: { userId, competitionId: id }
-    });
-    if (existingCompetitor) {
-      return res.status(400).json({ message: "User already joined the competition" });
-    }
-
-    const newCompetitor = await Competitor.create({
-      userId,
-      competitionId: id,
-      description: description, 
-    });
-
-    res.status(201).json(newCompetitor);
-  } catch (error) {
-    console.error("Error joining competition:", error);
-    res.status(500).json({ message: "Error joining competition" });
-  }
-});
-
-app.get('/api/competitions/:competitionId/descriptions', async (req, res) => {
-  const { competitionId } = req.params;
-
-  try {
-      const descriptions = await Competitor.findAll({
-          where: { competitionId },
-          include: {
-              model: User,
-              attributes: ['username'], 
-          },
-      });
-
-      res.status(200).json(descriptions);
-  } catch (error) {
-      console.error('Error fetching competition descriptions:', error);
-      res.status(500).json({ message: 'Failed to fetch descriptions.' });
-  }
-});
-
-app.post("/api/competitions/:id/pick-winner", async (req, res) => {
-  const { id } = req.params;
-  const { winner } = req.body;
-  try {
-    const competition = await Competition.findByPk(id);
-    if (!competition) {
-      return res.status(404).json({ message: "Competition not found" });
-    }
-    competition.winner = winner;
-    await competition.save();
-    res.status(200).json({ message: "Winner selected successfully" });
-  } catch (error) {
-    console.error("Error picking winner:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
-
-app.get('/api/descriptions/:id', async (req, res) => { 
-  try { const description = await Competitor.findByPk(req.params.id, { include: [User] }); 
-  if (!description) { return res.status(404).json({ message: 'Description not found' }); 
-} res.status(200).json(description); 
-} catch (error) { console.error('Error fetching description:', error); 
-  res.status(500).json({ message: 'Internal server error' }); 
-} });
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
