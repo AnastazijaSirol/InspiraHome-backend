@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize('postgresql://inspira_home_bg4o_user:8rYimYi35fhBbGKtfDwuBsm82Drx5jv0@dpg-cthg6f5ds78s73f96bm0-a.oregon-postgres.render.com/inspira_home_bg4o', {
+const sequelize = new Sequelize('postgresql://postgres:PfOdltFXIgiLBPSthxJKzZJJBTMjJqFK@autorack.proxy.rlwy.net:30275/railway', {
   dialect: 'postgres',
   dialectOptions: {
     ssl: {
